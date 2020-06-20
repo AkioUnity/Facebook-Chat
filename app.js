@@ -66,6 +66,15 @@ app.get('/send', (req, res) => {
     sendMessage(page_id,message);
     res.status(200).send(message);
 });
+
+//https://www.lomago.io:1337/send?text=hello&page_id=3357824640912103
+app.post('/send', (req, res) => {
+    let body = req.body;
+    sendMessage(body.page_id,body.text);
+    db.InsertMessage(body.sender_id,body.receiver_id,body.text);
+    res.status(200).send("sent");
+});
+
 // Accepts POST requests at /webhook endpoint
 app.post('/webhook', (req, res) => {
     // Parse the request body from the POST
@@ -169,7 +178,7 @@ function callSendAPI(sender_psid, response) {
             "id": sender_psid
         },
         "message": response
-    }
+    };
 
     // console.log(request_body);
 
@@ -183,7 +192,7 @@ function callSendAPI(sender_psid, response) {
         if (!err) {
             console.log('message sent!')
         } else {
-            console.error("Unable to send message:" + err);
+            console.error("Unable to send message(callSendAPI):" + err);
         }
     });
 }
