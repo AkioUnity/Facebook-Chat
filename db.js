@@ -12,9 +12,9 @@ module.exports = {
         // console.log(query);
         return await connection.query(query);
     },
-    InsertMessage: function (sender_id,receiver_id,message) {
+    InsertMessage: function (sender_id,receiver_id,message,type) {
         let time=new Date().toISOString().replace(/T/,' ').replace(/\..+/, '');
-        let query = "insert into w_receive_messages (`event`,`text`,sender_id,receiver_id,`time`) values ('facebook','"+message+"',"+sender_id+","+receiver_id+",'"+time+"')";
+        let query = "insert into w_receive_messages (`event`,`text`,sender_id,receiver_id,`time`) values ('"+type+"','"+message+"',"+sender_id+","+receiver_id+",'"+time+"')";
         // console.log(query);
         connection.query(query);
 
@@ -38,7 +38,7 @@ module.exports = {
             // console.log(res);
         });
     },
-    LAMOGA_WAF_request: async function (page_id,message) {
+    LAMOGA_WAF_request: async function (page_id,message,type) {  //page_id:facebook_page_id or Telegram username
         let query = "select * from LAMOGA_WAF_request WHERE customer_phone = '" + page_id + "'";
         [rows] = await wp_con.query(query);
         if (rows.length==0){  //PIN code is needed.
@@ -58,7 +58,7 @@ module.exports = {
         }
         let sender_id=rows[0].user_id;
         let receiver_id=rows[0].consultant_id;
-        this.InsertMessage(sender_id,receiver_id,message);
+        this.InsertMessage(sender_id,receiver_id,message,type);
         return null;
     },
     showLog: function (aa) {

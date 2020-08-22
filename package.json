@@ -5,14 +5,15 @@
   "scripts": {
     "start": "node app.js"
   },
-  "author": "Facebook",
+  "author": "akio",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.0",
     "dotenv": "^8.2.0",
     "express": "^4.13.4",
     "request": "^2.72.0",
-    "mysql2": "^2.1.0"
+    "mysql2": "^2.1.0",
+    "node-telegram-bot-api": "^0.50.0"
   },
   "engines": {
     "node": "~4.1.2"

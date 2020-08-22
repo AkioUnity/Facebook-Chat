@@ -71,7 +71,7 @@ app.get('/send', (req, res) => {
 app.post('/send', (req, res) => {
     let body = req.body;
     sendMessage(body.page_id,body.text);
-    db.InsertMessage(body.sender_id,body.receiver_id,body.text);
+    db.InsertMessage(body.sender_id,body.receiver_id,body.text,'facebook');
     res.status(200).send("sent");
 });
 
@@ -113,7 +113,7 @@ async function handleMessage(sender_psid, received_message) {
     // Checks if the message contains text
     if (received_message.text) {
         //check
-        let message = await db.LAMOGA_WAF_request(sender_psid, received_message.text);
+        let message = await db.LAMOGA_WAF_request(sender_psid, received_message.text,'facebook');
         if (message)
             sendMessage(sender_psid, message);
     } else if (received_message.attachments) {
@@ -196,3 +196,33 @@ function callSendAPI(sender_psid, response) {
         }
     });
 }
+
+//--------------Telegram
+
+const TelegramBot = require('node-telegram-bot-api');
+const token = '1168506367:AAGQYyecVc3y5nJ5nFiAWLll5TR-WqMV7h0';
+const bot = new TelegramBot(token, {polling: true});
+
+bot.onText(/\/start/, (msg) => {
+
+    bot.sendMessage(msg.chat.id, "Welcome for Lamoga Consultant System");
+
+});
+
+bot.on('message', async (msg) => {
+    // console.log(msg);
+    let message = await db.LAMOGA_WAF_request(sender_psid, msg.text,'telegram');
+    if (message)
+        sendMessage(sender_psid, message);
+    var hi = "hi";
+    if (msg.text.toString().toLowerCase().indexOf(hi) === 0 || msg.text.toString().toLowerCase().indexOf('hello') === 0) {
+        bot.sendMessage(msg.chat.id, "Hello " + msg.from.first_name);
+    }
+
+    // var bye = "bye";
+    // if (msg.text.toString().toLowerCase().includes(bye)) {
+    //     bot.sendMessage(msg.chat.id, "Hope to see you around again , GoodBye");
+    // }
+});
+
+
