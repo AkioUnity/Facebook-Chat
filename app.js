@@ -67,11 +67,15 @@ app.get('/send', (req, res) => {
     res.status(200).send(message);
 });
 
-//https://www.lomago.io:1337/send?text=hello&page_id=3357824640912103
+//https://www.lomago.io:1337/send?text=hello&page_id=3357824640912103&type='facebook'
+//https://www.lomago.io:1337/send?text=telegram&page_id=3357824640912103&type='telegram'
 app.post('/send', (req, res) => {
     let body = req.body;
-    sendMessage(body.page_id,body.text);
-    db.InsertMessage(body.sender_id,body.receiver_id,body.text,'facebook');
+    if (body.type=='facebook')
+        sendMessage(body.page_id,body.text);
+    else  //telegram
+        bot.sendMessage(body.page_id, body.text); //chat_id
+    db.InsertMessage(body.sender_id,body.receiver_id,body.text,body.type);
     res.status(200).send("sent");
 });
 
@@ -190,7 +194,7 @@ function callSendAPI(sender_psid, response) {
         "json": request_body
     }, (err, res, body) => {
         if (!err) {
-            console.log('message sent!')
+            console.log('facebook message sent!')
         } else {
             console.error("Unable to send message(callSendAPI):" + err);
         }
@@ -210,10 +214,10 @@ bot.onText(/\/start/, (msg) => {
 });
 
 bot.on('message', async (msg) => {
-    // console.log(msg);
-    let message = await db.LAMOGA_WAF_request(sender_psid, msg.text,'telegram');
+    console.log(msg);
+    let message = await db.LAMOGA_WAF_request(msg.from.id, msg.text,'telegram',msg.from.username);
     if (message)
-        sendMessage(sender_psid, message);
+        bot.sendMessage(msg.chat.id, message);
     var hi = "hi";
     if (msg.text.toString().toLowerCase().indexOf(hi) === 0 || msg.text.toString().toLowerCase().indexOf('hello') === 0) {
         bot.sendMessage(msg.chat.id, "Hello " + msg.from.first_name);

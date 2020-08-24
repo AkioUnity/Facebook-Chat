@@ -1,10 +1,10 @@
 let mysql_connection = require("./mysql_connection");
 
-const  request = require('request');
+const request = require('request');
 
 let connection = mysql_connection.pool;
 let wp_con = mysql_connection.wp_pool;
-const Type_Facebook=2;
+const Type_Facebook = 2;
 module.exports = {
     UpdateWaits: async function (email, status) {
         console.log(email, ":", status);
@@ -12,16 +12,16 @@ module.exports = {
         // console.log(query);
         return await connection.query(query);
     },
-    InsertMessage: function (sender_id,receiver_id,message,type) {
-        let time=new Date().toISOString().replace(/T/,' ').replace(/\..+/, '');
-        let query = "insert into w_receive_messages (`event`,`text`,sender_id,receiver_id,`time`) values ('"+type+"','"+message+"',"+sender_id+","+receiver_id+",'"+time+"')";
+    InsertMessage: function (sender_id, receiver_id, message, type) {
+        let time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        let query = "insert into w_receive_messages (`event`,`text`,sender_id,receiver_id,`time`) values ('" + type + "','" + message + "'," + sender_id + "," + receiver_id + ",'" + time + "')";
         // console.log(query);
         connection.query(query);
 
 //send Billing Server
         let request_body = {
-            sender_id:sender_id,
-            receiver_id:receiver_id,
+            sender_id: sender_id,
+            receiver_id: receiver_id,
             text: message
         };
 
@@ -31,34 +31,44 @@ module.exports = {
             "json": request_body
         }, (err, res, body) => {
             if (!err) {
-                console.log('message sent!')
+                console.log('billingServer message sent!')
             } else {
                 console.error("Unable to send message:" + err);
             }
             // console.log(res);
         });
     },
-    LAMOGA_WAF_request: async function (page_id,message,type) {  //page_id:facebook_page_id or Telegram username
+    LAMOGA_WAF_request: async function (page_id, message, type, telegram_username = null) {  //page_id:facebook_page_id or Telegram chat_id
         let query = "select * from LAMOGA_WAF_request WHERE customer_phone = '" + page_id + "'";
         [rows] = await wp_con.query(query);
-        if (rows.length==0){  //PIN code is needed.
-            query = "select * from LAMOGA_WAF_request WHERE '" + message+ "' like concat('%',consultant_phone,'%')";
-            [rows] = await wp_con.query(query);
+        if (rows.length == 0) {  //PIN code is needed.
+            if (type == 'facebook') {
+                query = "select * from LAMOGA_WAF_request WHERE '" + message + "' like concat('%',consultant_phone,'%')";
+                [rows] = await wp_con.query(query);
 
-            query = "select text from auto_messages WHERE type='facebook' ";
-            [reply_rows] = await wp_con.query(query);
+                query = "select text from auto_messages WHERE type='facebook' ";
+                [reply_rows] = await wp_con.query(query);
 
-            if (rows.length==0)  //PIN code is needed.
-                return reply_rows[1].text;  //'What is your PIN code?'
-            query = "UPDATE LAMOGA_WAF_request SET customer_phone='"+page_id+"' WHERE id="+rows[0].id;
-            await wp_con.query(query);
-            let reply=reply_rows[2].text; //'Nice! $consultant will contact you.';
-            reply=reply.replace('$consultant',rows[0].consultant_name);
-            return reply;
+                if (rows.length == 0)  //PIN code is needed.
+                    return reply_rows[1].text;  //'What is your PIN code?'
+                query = "UPDATE LAMOGA_WAF_request SET customer_phone='" + page_id + "' WHERE id=" + rows[0].id;
+                await wp_con.query(query);
+                let reply = reply_rows[2].text; //'Nice! $consultant will contact you.';
+                reply = reply.replace('$consultant', rows[0].consultant_name);
+                return reply;
+            }
+            else{ //telegram
+                let query = "select * from LAMOGA_WAF_request WHERE consultant_phone = '" + telegram_username+ "'";
+                [rows] = await wp_con.query(query);
+                if (rows.length == 0)
+                    return null;
+                query = "UPDATE LAMOGA_WAF_request SET customer_phone='" + page_id + "' WHERE id=" + rows[0].id;
+                await wp_con.query(query);
+            }
         }
-        let sender_id=rows[0].user_id;
-        let receiver_id=rows[0].consultant_id;
-        this.InsertMessage(sender_id,receiver_id,message,type);
+        let sender_id = rows[0].user_id;
+        let receiver_id = rows[0].consultant_id;
+        this.InsertMessage(sender_id, receiver_id, message, type);
         return null;
     },
     showLog: function (aa) {
