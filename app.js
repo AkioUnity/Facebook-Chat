@@ -58,37 +58,45 @@ app.get('/webhook', (req, res) => {
     }
 });
 
-//https://www.lomago.io:1337/send?text=hello&page_id=3357824640912103
-app.get('/send', (req, res) => {
+//https://www.lomago.io:1337/send?text=hello&page_id=106704524351660&type=facebook
+app.get('/send', (req, res) => {      //connection message from cockpit  //from webchat
     // Parse params from the webhook verification request
-    let page_id = req.query['page_id'];
-    let message = req.query['text'];
-    sendMessage(page_id,message);
-    res.status(200).send(message);
+    // console.log("app.get");
+    console.log(req.query);
+    sendConsultantMessage(req.query);
+    res.status(200).send("app.get");
 });
 
 //https://www.lomago.io:1337/send?text=hello&page_id=3357824640912103&type='facebook'
 //https://www.lomago.io:1337/send?text=telegram&page_id=3357824640912103&type='telegram'
 app.post('/send', (req, res) => {
-    let body = req.body;
-    if (body.type=='facebook')
-        sendMessage(body.page_id,body.text);
-    else  //telegram
-        bot.sendMessage(body.page_id, body.text); //chat_id
-    db.InsertMessage(body.sender_id,body.receiver_id,body.text,body.type);
+    console.log("app.post");
+    sendConsultantMessage(req.body);
     res.status(200).send("sent");
 });
 
-// Accepts POST requests at /webhook endpoint
+async function sendConsultantMessage(body){
+    let consultantName = await db.GetConsultantName(body.page_id);
+    let message=body.text;
+    if (consultantName!='')
+        message=consultantName+": "+message;
+    if (body.type=='facebook')
+        sendMessage(body.page_id,message);
+    else  //telegram
+        bot.sendMessage(body.page_id, message); //chat_id
+    if (body.sender_id!=null)
+        db.InsertMessage(body.sender_id,body.receiver_id,message,body.type);
+}
+
+// Accepts POST requests at /webhook endpoint  Facebook Message Hook
 app.post('/webhook', (req, res) => {
     // Parse the request body from the POST
     let body = req.body;
     // Check the webhook event is from a Page subscription
     if (body.object === 'page') {
         body.entry.forEach(function (entry) {
-            // Gets the body of the webhook event
+            console.log(entry);
             let webhook_event = entry.messaging[0];
-            // console.log(entry);
             // Get the sender PSID
             let sender_psid = webhook_event.sender.id;
             // console.log('Sender ID: ' + sender_psid);
@@ -200,7 +208,7 @@ function callSendAPI(sender_psid, response) {
         }
     });
 }
-
+//-----------facebook End
 //--------------Telegram
 
 const TelegramBot = require('node-telegram-bot-api');
@@ -215,13 +223,13 @@ bot.onText(/\/start/, (msg) => {
 
 bot.on('message', async (msg) => {
     console.log(msg);
-    let message = await db.LAMOGA_WAF_request(msg.from.id, msg.text,'telegram',msg.from.username);
+    let message = await db.LAMOGA_WAF_request(msg.from.id, msg.text,'telegram');
     if (message)
         bot.sendMessage(msg.chat.id, message);
-    var hi = "hi";
-    if (msg.text.toString().toLowerCase().indexOf(hi) === 0 || msg.text.toString().toLowerCase().indexOf('hello') === 0) {
-        bot.sendMessage(msg.chat.id, "Hello " + msg.from.first_name);
-    }
+    // var hi = "hi";
+    // if (msg.text.toString().toLowerCase().indexOf(hi) === 0 || msg.text.toString().toLowerCase().indexOf('hello') === 0) {
+    //     bot.sendMessage(msg.chat.id, "Hello " + msg.from.first_name);
+    // }
 
     // var bye = "bye";
     // if (msg.text.toString().toLowerCase().includes(bye)) {

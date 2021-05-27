@@ -12,9 +12,9 @@ let connectionInfo = {
 
 let lamoga = {
     host: 'lamoga.de',
-    user: 'stuedemann_admin_913',
-    database: 'wp_portal_stuedemann_lamoga',
-    password:'656ekEpIl2QEkEL1C8hir8zAleL7me',
+    user: 'whatsapp12_admin_8439',
+    database: 'wp_portal__whatsapp_chat',
+    password:'2ac4tevunu5igI4oDaV5r3V4h23A6i',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
