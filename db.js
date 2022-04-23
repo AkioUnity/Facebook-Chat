@@ -28,12 +28,13 @@ module.exports = {
         };
 
         request({
-            "uri": "http://www.lomago.io/whatsapp/api/users/billingServer",
+            "uri": "https://www.lomago.io/whatsapp/api/users/billingServer",
             "method": "POST",
             "json": request_body
         }, (err, res, body) => {
             if (!err) {
                 console.log('billingServer message sent!')
+                console.log(body);
             } else {
                 console.error("Unable to send message:" + err);
             }

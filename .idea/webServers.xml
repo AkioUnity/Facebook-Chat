@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="9676c0bf-fa9d-45d3-9d8d-16319220492f" name="aws" url="http://www.lomago.io">
-        <fileTransfer host="www.lomago.io" port="22" privateKey="E:\work\Lomago\Dialogflow\ssh\oldchatlive.ppk" rootFolder="/home/ec2-user" accessType="SFTP" keyPair="true">
+        <fileTransfer host="www.lomago.io" port="22" privateKey="E:\work\Lomago\Dialogflow\ssh\oldchatlive.ppk" rootFolder="/var/www/node/facebook" accessType="SFTP" keyPair="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

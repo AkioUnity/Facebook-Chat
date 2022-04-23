@@ -13,8 +13,8 @@ const https = require("https"),
   fs = require("fs");
 
 const options = {
-    key: fs.readFileSync("/etc/letsencrypt/live/www.lomago.io/privkey.pem"),
-    cert: fs.readFileSync("/etc/letsencrypt/live/www.lomago.io/fullchain.pem")
+    key: fs.readFileSync("/etc/letsencrypt/live/lomago.io/privkey.pem"),
+    cert: fs.readFileSync("/etc/letsencrypt/live/lomago.io/fullchain.pem")
 };
 // Imports dependencies and set up http server
 const
@@ -58,6 +58,7 @@ app.get('/webhook', (req, res) => {
     }
 });
 
+//for facebook, only test user possible!!!
 //https://www.lomago.io:1337/send?text=hello&page_id=106704524351660&type=facebook
 app.get('/send', (req, res) => {      //connection message from cockpit  //from webchat
     // Parse params from the webhook verification request
@@ -212,7 +213,7 @@ function callSendAPI(sender_psid, response) {
 //--------------Telegram
 
 const TelegramBot = require('node-telegram-bot-api');
-const token = '1168506367:AAGQYyecVc3y5nJ5nFiAWLll5TR-WqMV7h0';
+const token = process.env.telegram_token;
 const bot = new TelegramBot(token, {polling: true});
 
 bot.onText(/\/start/, (msg) => {

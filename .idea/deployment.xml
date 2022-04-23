@@ -5,7 +5,7 @@
       <paths name="aws">
         <serverdata>
           <mappings>
-            <mapping deploy="/facebook-chat" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
