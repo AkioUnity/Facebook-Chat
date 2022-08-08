@@ -60,7 +60,7 @@ app.get('/webhook', (req, res) => {
 
 //for facebook, only test user possible!!!
 //https://www.lomago.io:1337/send?text=hello&page_id=106704524351660&type=facebook
-app.get('/send', (req, res) => {      //connection message from cockpit  //from webchat
+app.get('/send', (req, res) => {      //connection message from cockpit  //from webchat and cockpit(wordpress)(activation)
     // Parse params from the webhook verification request
     // console.log("app.get");
     console.log(req.query);
@@ -197,13 +197,13 @@ function callSendAPI(sender_psid, response) {
 
     // Send the HTTP request to the Messenger Platform
     request({
-        "uri": "https://graph.facebook.com/v2.6/me/messages",
-        "qs": {"access_token": PAGE_ACCESS_TOKEN},
+        "uri": "https://graph.facebook.com/v13.0/me/messages?access_token="+PAGE_ACCESS_TOKEN,
+        // "qs": {"access_token": PAGE_ACCESS_TOKEN},
         "method": "POST",
         "json": request_body
     }, (err, res, body) => {
         if (!err) {
-            console.log('facebook message sent!')
+            // console.log(res)
         } else {
             console.error("Unable to send message(callSendAPI):" + err);
         }
@@ -213,20 +213,30 @@ function callSendAPI(sender_psid, response) {
 //--------------Telegram
 
 const TelegramBot = require('node-telegram-bot-api');
-const token = process.env.telegram_token;
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(process.env.telegram_token, {polling: true});
+const consultant_bot = new TelegramBot(process.env.telegram_consultant_token, {polling: true});
 
-bot.onText(/\/start/, (msg) => {
-
-    bot.sendMessage(msg.chat.id, "Welcome for Lamoga Consultant System");
+consultant_bot.on('message', async (msg) => {
+        // console.log(msg.text,msg.from.id);
+    let message = await db.ConsultantTelegram(msg.from.id, msg.text);
+    if (message)
+        consultant_bot.sendMessage(msg.chat.id, message);
 
 });
 
+//https://www.lomago.io:1337/send_telegram?text=telegram&page_id=1082728856
+app.get('/send_telegram', (req, res) => {
+    let body=req.query;
+    consultant_bot.sendMessage(body.page_id, body.text);
+    res.status(200).send("sent");
+});
+
 bot.on('message', async (msg) => {
-    console.log(msg);
+        // console.log(msg.text,msg.from.id);
     let message = await db.LAMOGA_WAF_request(msg.from.id, msg.text,'telegram');
     if (message)
         bot.sendMessage(msg.chat.id, message);
+
     // var hi = "hi";
     // if (msg.text.toString().toLowerCase().indexOf(hi) === 0 || msg.text.toString().toLowerCase().indexOf('hello') === 0) {
     //     bot.sendMessage(msg.chat.id, "Hello " + msg.from.first_name);
@@ -237,5 +247,18 @@ bot.on('message', async (msg) => {
     //     bot.sendMessage(msg.chat.id, "Hope to see you around again , GoodBye");
     // }
 });
+
+let newsletters= require('./newsletter');
+const newsletter_bot = new TelegramBot(process.env.telegram_newsletters_token, {polling: true});
+
+newsletter_bot.on('message', async (msg) => {
+    // console.log(msg.text,msg.from.id);
+    let message = await newsletters.check(msg.from.id, msg.text);
+    if (message)
+        newsletter_bot.sendMessage(msg.chat.id, message);
+
+});
+
+
 
 
