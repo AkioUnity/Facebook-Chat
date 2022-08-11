@@ -10,6 +10,16 @@ let connectionInfo = {
     queueLimit: 0
 };
 
+let newsletter_connect = {
+    host: 'localhost',
+    user: 'root',
+    database: 'newsletter',
+    password:'djwth10',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
+
 let lamoga = {
     host: 'lamoga.de',
     user: 'whatsapp12_admin_8439',
@@ -23,5 +33,6 @@ let lamoga = {
 
 const pool = mysql.createPool(connectionInfo);
 const wp_pool = mysql.createPool(lamoga);
+const newsletter= mysql.createPool(newsletter_connect);
 
-module.exports = {pool,wp_pool};
+module.exports = {pool,wp_pool,newsletter};

@@ -5,7 +5,7 @@ const request = require('request');
 let connection = mysql_connection.pool;
 let wp_con = mysql_connection.wp_pool;
 let wp_portal_id='_17483';
-const Type_Facebook = 2;
+
 module.exports = {
     UpdateWaits: async function (email, status) {
         console.log(email, ":", status);
